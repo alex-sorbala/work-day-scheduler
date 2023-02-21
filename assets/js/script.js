@@ -5,6 +5,7 @@
 $(document).ready(function () {
   /* 
     TODO: Add code to display the current date in the header of the page.
+  ================================================================================================================  
   */
     var today = dayjs();
     $("#currentDay").text(today.format("dddd, MMMM D"));
@@ -12,6 +13,7 @@ $(document).ready(function () {
   /*TODO: Add a listener for click events on the save button. This code should
     use the id in the containing time-block as a key to save the user input in
     local storage. 
+  =================================================================================================================
   */
     $("body").on("click", function (event) {
       var targetElement = $(event.target);
@@ -39,7 +41,8 @@ $(document).ready(function () {
     });
 
   /* TODO: Add code to apply the past, present, or future class to each time
-    block by comparing the id to the current hour. 
+    block by comparing the id to the current hour.
+  ================================================================================================================ 
   */
 
     var hour = today.get("hour"); //get current hour  
@@ -59,6 +62,7 @@ $(document).ready(function () {
 
   /* TODO: Add code to get any user input that was saved in localStorage and set
     the values of the corresponding textarea elements. 
+  ===============================================================================================================
   */
 
     //get and parse any existing local storage objects
@@ -80,6 +84,9 @@ $(document).ready(function () {
 
 /* 
   Saving data to local storage
+    - handling empty array event
+    - duplicate prevention
+  ===============================================================================================================
 */
 function saveData(timeBlock, textdata) {
   //creating the object
@@ -91,14 +98,33 @@ function saveData(timeBlock, textdata) {
   //get and parse any existing local storage objects
   var dayShedule = JSON.parse(localStorage.getItem("dayShedule"));
 
-  //initialise array if empty
+  //Accounting for case of empty array
   if (dayShedule == null) {
-    dayShedule = [];
+    dayShedule = [hourData];
+    //Save first day shedule to local storage
+    localStorage.setItem("dayShedule", JSON.stringify(dayShedule));
+    //Exit function after saving for this case
+    return;
   }
 
-  //push hourData into array
-  dayShedule.push(hourData);
+  //Accounting for case when data override needed
+  var ovrrideDone = false;
+  dayShedule.forEach(element => {
+    if(element.timeBlock == timeBlock){
+      //replace the old data with new
+      element.data = textdata;
+      // Set override done flag to true and exit function
+      ovrrideDone = true;
+      return;
+    }
+  });
+
+  //Push data only if no override has been done
+  if(!ovrrideDone){
+    //push hourData into array
+    dayShedule.push(hourData);
+  }
 
   //Save day shedule to local storage
-  localStorage.setItem("dayShedule", JSON.stringify(dayShedule));
+    localStorage.setItem("dayShedule", JSON.stringify(dayShedule));
 }
